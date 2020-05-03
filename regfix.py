@@ -28,10 +28,12 @@ class SearchNode :
         self.edges = edges
 
 class RegFix:
-    def __init__(self, dfa:DFA, errstr:str, charset) :
+    def __init__(self, dfa:DFA, errstr:str) :
         dist:Dict[SearchState, SearchNode] = {
             SearchState(dfa.initial, 0) : SearchNode(0, [])
         }
+        charset:str = dfa.charset
+
         # 0/1 BFS: using deque
         deq:Deque[Tuple[SearchState, SearchEdge, bool]] = deque([(SearchState(dfa.initial, 0), None, False)])
         termini:List[State] = []
@@ -66,11 +68,10 @@ class RegFix:
                         dist[s].edges.append(SearchEdge(action, last))
                 else :
                     dist[s] = SearchNode(cost, [SearchEdge(action, last)])
-                    if s.pos == len(errstr) and s.state.acceptable :
+                    if s.pos == len(errstr) and s.state.accept :
                         total_cost = cost
                         termini.append(s.state)
                 yield s
-
 
         for st in dfs_gen() :
             s, p = st.state, st.pos

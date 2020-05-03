@@ -1,3 +1,6 @@
+# Generated graphviz files
+*.gv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

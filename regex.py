@@ -1,6 +1,7 @@
 from abc import ABC, abstractproperty
 from typing import Set, List, Iterable
 from memoize import *
+from graphviz import Digraph
 
 class Term(ABC) :
     @abstractproperty
@@ -39,9 +40,22 @@ class Leaf(Term) :
     def last(self) -> Set['Leaf']:
         return frozenset([self])
 
+    @memoize_property
+    def is_terminator(self) -> bool :
+        return False
+
+class _Terminator(Leaf) :
+    def __init__(self) :
+        self.char = ''
+        self.follow:Set[Leaf] = frozenset()
+
+    @memoize_property
+    def is_terminator(self) -> bool :
+        return True
+
 class Empty(Term) :
-    def __init__(self, terms:List[Term]) :
-        self.terms:List[Term] = terms
+    def __init__(self) :
+        pass
     
     @memoize_property
     def nullable(self) -> bool :
@@ -179,7 +193,7 @@ class PositiveClosure(Term) :
     
     @memoize_property
     def nullable(self) -> bool :
-        return term.nullable
+        return self.term.nullable
     
     @memoize_property
     def first(self) -> Set[Leaf] :
@@ -188,6 +202,10 @@ class PositiveClosure(Term) :
     @memoize_property
     def last(self) -> Set[Leaf] :
         return self.term.last
+
+class RegEx :
+    def __init__(self, term:Term) :
+        self.term = Concat(term, _Terminator())
 
 def Literal(s: str) -> Concat :
     return Concat(*map(Leaf, s))
