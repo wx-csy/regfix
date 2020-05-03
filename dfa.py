@@ -25,9 +25,6 @@ class DFA :
     def initial(self) -> 'State' :
         return self.get_state(self.regex.first)
 
-    def capacity(self) -> int :
-        return len(self.get_state.memo)
-
 class State :
     def __init__(self, dfa:DFA, leaves:Set[Leaf]) :
         self.dfa = dfa
@@ -37,7 +34,7 @@ class State :
         return hash(self.leaves)
 
     def __repr__(self) -> str :
-        return repr(self.leaves) + ' ' + ':'.join(map(str, [x.follow for x in self.leaves]))
+        return repr(self.leaves) + ' ' + ':'.join(map(lambda x: str(x.follow), self.leaves))
     
     @memoize_property
     def acceptable(self) :
