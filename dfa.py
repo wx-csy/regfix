@@ -36,19 +36,14 @@ class DFA :
         >>> print(dfa.export_graphviz('DFA').source) # doctest: +NORMALIZE_WHITESPACE
         digraph DFA {
             rankdir=LR
-            node [shape=doublecircle]
-            1
-            node [shape=circle]
-            2
-            node [shape=circle]
-            3
+            1 [shape=doublecircle]
+            2 [shape=circle]
+            3 [shape=circle]
             3 -> 1 [label=r]
             2 -> 3 [label=a]
             1 -> 2 [label=b]
-            node [shape=circle]
-            4
-            node [shape=circle]
-            5
+            4 [shape=circle]
+            5 [shape=circle]
             5 -> 1 [label=o]
             4 -> 5 [label=o]
             1 -> 4 [label=f]
@@ -90,8 +85,7 @@ class State :
             return drawer.statemap[self]
         identifier = len(drawer.statemap)
         drawer.statemap[self] = identifier
-        drawer.graph.attr('node', shape='doublecircle' if self.accept else 'circle')
-        drawer.graph.node(str(identifier))
+        drawer.graph.node(str(identifier), shape='doublecircle' if self.accept else 'circle')
         for ch in self.dfa.charset :
             next_identifier = self.next(ch)._export_graphviz(drawer)
             if next_identifier :

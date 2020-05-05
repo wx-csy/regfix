@@ -3,6 +3,12 @@ from typing import Set, List, Iterable
 from memoize import *
 from graphviz import Digraph
 
+class _Graphviz_Drawer :
+    def __init__(self, name:str='') :
+        self.graph = Digraph(name=name)
+        self.graph.attr(ordering='out')
+        self.statemap:Dict['Term', int] = dict()
+
 class Term(ABC) :
     @abstractproperty
     def nullable(self) -> bool:
@@ -17,6 +23,10 @@ class Term(ABC) :
     @abstractproperty
     def last(self) -> Set['Leaf'] :
         # the set of last possible character of this term
+        pass
+
+    @abstractproperty
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
         pass
 
 class Leaf(Term) :
@@ -44,6 +54,12 @@ class Leaf(Term) :
     def is_terminator(self) -> bool :
         return False
 
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label=self.char, shape='plaintext')
+        return identifier
+
 class _Terminator(Leaf) :
     def __init__(self) :
         self.char = ''
@@ -69,6 +85,12 @@ class Empty(Term) :
     def last(self) -> Set[Leaf] :
         return frozenset()
 
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='', shape='circle')
+        return identifier
+
 class Optional(Term) :
     def __init__(self, term:Term) :
         self.term:Term = term
@@ -84,6 +106,13 @@ class Optional(Term) :
     @memoize_property
     def last(self) -> Set[Leaf] :
         return self.term.last
+
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='?', shape='circle')
+        drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
+        return identifier
 
 class Concat(Term) :
     def __init__(self, *terms) :
@@ -138,6 +167,14 @@ class Concat(Term) :
                 break
         return frozenset(ret)
 
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='', shape='circle')
+        for child in self.terms :
+            drawer.graph.edge(str(identifier), str(child._export_graphviz(drawer)))
+        return identifier
+
 class Union(Term) :
     def __init__(self, *terms) :
         self.terms:List[Term] = list(terms)
@@ -163,6 +200,14 @@ class Union(Term) :
             ret |= term.last
         return frozenset(ret)
 
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='|', shape='circle')
+        for child in self.terms :
+            drawer.graph.edge(str(identifier), str(child._export_graphviz(drawer)))
+        return identifier
+
 class KleeneClosure(Term) :
     def __init__(self, term:Term) :
         self.term:Term = term
@@ -182,6 +227,13 @@ class KleeneClosure(Term) :
     @memoize_property
     def last(self) -> Set[Leaf] :
         return self.term.last
+
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='*', shape='circle')
+        drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
+        return identifier
 
 class PositiveClosure(Term) :
     def __init__(self, term:Term) :
@@ -203,9 +255,21 @@ class PositiveClosure(Term) :
     def last(self) -> Set[Leaf] :
         return self.term.last
 
+    def _export_graphviz(self, drawer:_Graphviz_Drawer) :
+        identifier = len(drawer.statemap) + 1
+        drawer.statemap[self] = identifier
+        drawer.graph.node(str(identifier), label='*', shape='circle')
+        drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
+        return identifier
+
 class RegEx :
     def __init__(self, term:Term) :
         self.term = Concat(term, _Terminator())
+    
+    def export_graphviz(self, name:str='') -> Digraph :
+        drawer = _Graphviz_Drawer(name)
+        self.term.terms[0]._export_graphviz(drawer)
+        return drawer.graph
 
 def Literal(s: str) -> Concat :
     return Concat(*map(Leaf, s))

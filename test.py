@@ -4,8 +4,9 @@ from dfa import DFA
 from regex import *
 
 # KleeneClosure(Union(Literal('foo'), Literal('bar')))
-dfa = DFA(RegEx(KleeneClosure(Union(Literal('foo'), Literal('bar')))),
-    'abcdefghijklmnopqrstuvwxyz')
+regex = RegEx(KleeneClosure(Union(Literal('foo'), Literal('bar'))))
+open('reg.gv', 'w').write(regex.export_graphviz('RegEx').source)
+dfa = DFA(regex, 'abcdefghijklmnopqrstuvwxyz')
 open('graph.gv', 'w').write(dfa.export_graphviz('DFA').source)
 fix = regfix.RegFix(dfa, 'bababbabababaaab')
 print(fix.cost)
