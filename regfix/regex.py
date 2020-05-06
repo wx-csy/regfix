@@ -1,6 +1,6 @@
 from abc import ABC, abstractproperty
 from typing import Set, List, Iterable
-from memoize import *
+from .memoize import *
 from graphviz import Digraph
 
 class _Graphviz_Drawer :
@@ -57,8 +57,11 @@ class Leaf(Term) :
     def _export_graphviz(self, drawer:_Graphviz_Drawer) :
         identifier = len(drawer.statemap) + 1
         drawer.statemap[self] = identifier
-        drawer.graph.node(str(identifier), label=self.char, shape='plaintext')
+        drawer.graph.node(str(identifier), label=self.char, shape='plain')
         return identifier
+
+    def __repr__(self) -> str:
+        return self.char
 
 class _Terminator(Leaf) :
     def __init__(self) :
@@ -68,6 +71,9 @@ class _Terminator(Leaf) :
     @memoize_property
     def is_terminator(self) -> bool :
         return True
+    
+    def __repr__(self) -> str:
+        return '$'
 
 class Empty(Term) :
     def __init__(self) :
@@ -90,6 +96,9 @@ class Empty(Term) :
         drawer.statemap[self] = identifier
         drawer.graph.node(str(identifier), label='', shape='circle')
         return identifier
+    
+    def __repr__(self) -> str:
+        return ''
 
 class Optional(Term) :
     def __init__(self, term:Term) :
@@ -114,6 +123,9 @@ class Optional(Term) :
         drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
         return identifier
 
+    def __repr__(self) -> str:
+        return f'({repr(self.term)})?'
+    
 class Concat(Term) :
     def __init__(self, *terms) :
         self.terms:List[Term] = list(terms)
@@ -174,6 +186,9 @@ class Concat(Term) :
         for child in self.terms :
             drawer.graph.edge(str(identifier), str(child._export_graphviz(drawer)))
         return identifier
+    
+    def __repr__(self) -> str:
+        return f'({"".join(map(repr, self.terms))})'
 
 class Union(Term) :
     def __init__(self, *terms) :
@@ -208,6 +223,9 @@ class Union(Term) :
             drawer.graph.edge(str(identifier), str(child._export_graphviz(drawer)))
         return identifier
 
+    def __repr__(self) :
+        return f'({"|".join(map(repr, self.terms))})'
+
 class KleeneClosure(Term) :
     def __init__(self, term:Term) :
         self.term:Term = term
@@ -234,6 +252,9 @@ class KleeneClosure(Term) :
         drawer.graph.node(str(identifier), label='*', shape='circle')
         drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
         return identifier
+
+    def __repr__(self) -> str:
+        return f'({repr(self.term)}*)'
 
 class PositiveClosure(Term) :
     def __init__(self, term:Term) :
@@ -262,6 +283,10 @@ class PositiveClosure(Term) :
         drawer.graph.edge(str(identifier), str(self.term._export_graphviz(drawer)))
         return identifier
 
+
+    def __repr__(self) -> str:
+        return f'({repr(self.term)}+)'
+
 class RegEx :
     def __init__(self, term:Term) :
         self.term = Concat(term, _Terminator())
@@ -270,6 +295,9 @@ class RegEx :
         drawer = _Graphviz_Drawer(name)
         self.term.terms[0]._export_graphviz(drawer)
         return drawer.graph
+
+    def __repr__(self) -> str :
+        return f'^{self.term.terms[0]}$'
 
 def Literal(s: str) -> Concat :
     return Concat(*map(Leaf, s))

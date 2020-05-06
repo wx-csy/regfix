@@ -1,7 +1,7 @@
 from collections import deque
 from random import choice
 from typing import List, Dict, Tuple, Deque, Optional
-from dfa import DFA, State
+from .dfa import DFA, State
 
 class SearchState :
     def __init__(self, state:State, pos:int) :

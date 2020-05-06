@@ -1,6 +1,6 @@
-from regex import RegEx, Term, Leaf
+from .regex import RegEx, Term, Leaf
 from typing import Set
-from memoize import *
+from .memoize import *
 from graphviz import Digraph
 import functools
 
