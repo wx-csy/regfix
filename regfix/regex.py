@@ -290,7 +290,10 @@ class PositiveClosure(Term) :
 class RegEx :
     def __init__(self, term:Term) :
         self.term = Concat(term, _Terminator())
-    
+
+    def as_term(self) -> Term :
+        return self.term.terms[0]
+
     def export_graphviz(self, name:str='') -> Digraph :
         drawer = _Graphviz_Drawer(name)
         self.term.terms[0]._export_graphviz(drawer)
@@ -301,3 +304,6 @@ class RegEx :
 
 def Literal(s: str) -> Concat :
     return Concat(*map(Leaf, s))
+
+def Charset(s: str) -> Union :
+    return Union(*map(Leaf, s))
