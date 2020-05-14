@@ -11,4 +11,5 @@ dfa = DFA(regfix.regex.RegEx(total_regex),
 
 err = input()
 fix = regfix.RegFix(dfa, err)
-print(fix.cost, fix.fix())
+print(fix.fix())
+print(fix.cost)

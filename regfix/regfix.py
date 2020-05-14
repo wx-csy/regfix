@@ -28,7 +28,7 @@ class SearchNode :
         self.edges = edges
 
 class RegFix:
-    def __init__(self, dfa:DFA, errstr:str) :
+    def __init__(self, dfa:DFA, errstr:str, max_cost:int=4) :
         dist:Dict[SearchState, SearchNode] = {
             SearchState(dfa.initial, 0) : SearchNode(0, [])
         }
@@ -40,9 +40,11 @@ class RegFix:
         total_cost:int = 2**63 - 1
         
         def update_state(s:SearchState, action:str, last:SearchState, one:bool) :
-            nonlocal total_cost
+            nonlocal total_cost, max_cost
             term = (s, SearchEdge(action, last), one)
             cost = dist[last].cost + int(one)
+            if cost > max_cost :
+                return
             if cost > total_cost : 
                 return
             if s in dist and dist[s].cost < cost :
@@ -91,6 +93,8 @@ class RegFix:
         self.cost:int = total_cost
         self.termini:List[State] = termini
         self.dist:[SearchState, SearchNode] = dist
+        if not self.success :
+            self.cost = -1
 
     @property
     def success(self) -> bool:
