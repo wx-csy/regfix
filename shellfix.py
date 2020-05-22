@@ -6,10 +6,9 @@ import regfix
 import rules
 
 total_regex = regfix.regex.Union(*(rule.get_regex().as_term() for rule in rules.rules))
-dfa = DFA(regfix.regex.RegEx(total_regex),
-        ' !$\',-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ^abcdefghijklmnopqrstuvwxyz+/"*:|(){}_\\')
+reg = regfix.regex.RegEx(total_regex)
 
 err = input()
-fix = regfix.RegFix(dfa, err)
+fix = regfix.RegFix(reg, err)
 print(fix.fix())
 print(fix.cost)

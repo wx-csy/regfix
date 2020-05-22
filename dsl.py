@@ -7,9 +7,9 @@ from regfix.regex import *
 WS = PositiveClosure(Leaf(' '))
 IDENTIFIER = PositiveClosure(Charset(string.ascii_letters + string.digits + '-'))
 FILE = PositiveClosure(Charset(string.ascii_letters + string.digits + '-_.'))
-FILES = PositiveClosure(Charset(string.ascii_letters + string.digits + '-_.*'))
+FILES = PositiveClosure(Charset(string.ascii_letters + string.digits + '{}-_.*'))
 PATH = PositiveClosure(Charset(string.ascii_letters + string.digits + '-_\.'))
-PATHS = PositiveClosure(Charset(string.ascii_letters + string.digits + '-_\.*'))
+PATHS = PositiveClosure(Charset(string.ascii_letters + string.digits + '{}-_\.*'))
 NUMBER = PositiveClosure(Charset(string.digits))
 
 class Argument :

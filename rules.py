@@ -17,7 +17,7 @@ rules: List[Command] = [
     ]),
 
     Command('apt-get', [
-        Argument('upgrate')
+        Argument('upgrade')
     ]),
 
     # cat
